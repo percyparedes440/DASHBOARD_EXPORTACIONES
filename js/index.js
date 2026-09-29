@@ -1,5 +1,5 @@
-const SUPABASE_URL = "https://uoftarfxakkpevugdycg.supabase.co";
-const SUPABASE_KEY = "sb_publishable_vT_w6EoVLl-BK12ojRTaOg_UeSXAVvh";
+const SUPABASE_URL = "https://lbkccbleirtyrsydqsdp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_XPE6TpfX2lnNDXPlkCBfcQ_8jj0hQBN";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let workbookData = null;
@@ -152,14 +152,14 @@ btnSubir.addEventListener('click', async function () {
     mostrarMensaje('Subiendo hojas a Supabase...', 'loading');
 
     try {
-        await supabaseClient.from('dashboard_data').delete().neq('id', 0);
+        await supabaseClient.from('REPORTE DE EXPORTACIONES').delete().neq('id', 0);
 
         const registros = Object.entries(hojasProcesadas).map(([nombre, data]) => ({
             sheet_name: nombre,
             data: data
         }));
 
-        const { error } = await supabaseClient.from('dashboard_data').insert(registros);
+        const { error } = await supabaseClient.from('REPORTE DE EXPORTACIONES').insert(registros);
         if (error) throw error;
 
         mostrarMensaje('✅ Datos subidos correctamente.', 'ok');
