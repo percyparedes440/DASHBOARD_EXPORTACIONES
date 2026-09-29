@@ -1,5 +1,5 @@
-const SUPABASE_URL = "https://uoftarfxakkpevugdycg.supabase.co";
-const SUPABASE_KEY = "sb_publishable_vT_w6EoVLl-BK12ojRTaOg_UeSXAVvh";
+const SUPABASE_URL = "https://lbkccbleirtyrsydqsdp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_XPE6TpfX2lnNDXPlkCBfcQ_8jj0hQBN";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 Chart.register(ChartDataLabels);
@@ -45,7 +45,7 @@ document.getElementById("fechaActual").textContent =
 async function cargarDatos() {
   try {
     const { data, error } = await supabaseClient
-      .from("dashboard_data")
+      .from("REPORTE DE EXPORTACIONES")
       .select("*")
       .eq("sheet_name", "BD")
       .order("created_at", { ascending: false })
@@ -59,7 +59,7 @@ async function cargarDatos() {
     document.getElementById("sheetName").textContent = "Pestaña: " + data.sheet_name;
 
     const { data: dataReporte } = await supabaseClient
-      .from("dashboard_data")
+      .from("REPORTE DE EXPORTACIONES")
       .select("data")
       .eq("sheet_name", "REPORTE DIARIO")
       .order("created_at", { ascending: false })
