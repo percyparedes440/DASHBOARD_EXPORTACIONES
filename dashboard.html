@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Exportaciones</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+</head>
+<body>
+
+    <div id="loading" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Cargando dashboard...</p>
+    </div>
+
+    <nav class="dash-tabs" id="dashTabs" style="display: none;">
+    <a href="#" class="tab active" data-seccion="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+    <a href="#" class="tab" data-seccion="reporte"><i class="fas fa-table"></i> Reporte Diario</a>
+    <img src="logo-01.png" alt="Logo" class="tab-logo">
+</nav>
+
+    <div id="dashboard" class="dashboard-section" style="display: none;">
+
+        <header class="exec-header">
+            <div class="exec-title">
+                <div class="exec-logo"><i class="fas fa-ship"></i></div>
+                <div>
+                    <h1>Dashboard de Exportaciones</h1>
+                    <span class="exec-subtitle" id="sheetName">Análisis de ventas y despachos</span>
+                </div>
+            </div>
+            <div class="exec-actions">
+                <span class="exec-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="fechaActual"></span>
+                </span>
+            </div>
+        </header>
+
+        <section class="kpi-row" id="kpiRow"></section>        
+
+        <section class="filters-row">
+            <div class="filter-chip">
+                <i class="fas fa-calendar-day"></i>
+                <input type="date" id="filterFecha" class="filter-input">
+            </div>
+
+            <div class="filter-chip">
+                <i class="fas fa-calendar"></i>
+                <div class="custom-select" id="csMes" data-value="">
+                    <button type="button" class="custom-select-trigger">
+                        <span class="custom-select-label">Mes</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </button>
+                    <div class="custom-select-options"></div>
+                </div>
+            </div>
+
+            <div class="filter-chip">
+                <i class="fas fa-calendar-week"></i>
+                <div class="custom-select" id="csSemana" data-value="">
+                    <button type="button" class="custom-select-trigger">
+                        <span class="custom-select-label">Semana</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </button>
+                    <div class="custom-select-options"></div>
+                </div>
+            </div>
+
+            <div class="filter-chip">
+                <i class="fas fa-cube"></i>
+                <div class="custom-select" id="csUnidad" data-value="">
+                    <button type="button" class="custom-select-trigger">
+                        <span class="custom-select-label">Tipo Unidad</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </button>
+                    <div class="custom-select-options"></div>
+                </div>
+            </div>
+
+            <div class="filter-chip">
+                <i class="fas fa-globe-americas"></i>
+                <div class="custom-select" id="csPais" data-value="">
+                    <button type="button" class="custom-select-trigger">
+                        <span class="custom-select-label">País</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </button>
+                    <div class="custom-select-options"></div>
+                </div>
+            </div>
+
+            <div class="filter-chip">
+                <i class="fas fa-file-contract"></i>
+                <div class="custom-select" id="csIncoterm" data-value="">
+                    <button type="button" class="custom-select-trigger">
+                        <span class="custom-select-label">Incoterm</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </button>
+                    <div class="custom-select-options"></div>
+                </div>
+            </div>
+
+            <button id="clearFilters" class="btn-clear-chips">
+                <i class="fas fa-eraser"></i> Limpiar
+            </button>
+        </section>
+
+        <section class="charts-exec" id="chartsGrid">
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-arrow-trend-up chart-icon"></i>
+                    <h3>Facturación por Mes (USD)</h3>
+                </div>
+                <canvas id="chartFactMes"></canvas>
+            </div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-boxes-stacked chart-icon"></i>
+                    <h3>Cantidad de Despachos por Mes</h3>
+                </div>
+                <canvas id="chartDespMes"></canvas>
+            </div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-cube chart-icon"></i>
+                    <h3>Volumen Despachado por Mes (m³)</h3>
+                </div>
+                <canvas id="chartVolMes"></canvas>
+            </div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-calendar-week chart-icon"></i>
+                    <h3>Despachos por Semana</h3>
+                </div>
+                <canvas id="chartDespSem"></canvas>
+            </div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-truck chart-icon"></i>
+                    <h3>Despachos por Proveedor de Transporte</h3>
+                </div>
+                <div class="chart-doughnut-wrapper">
+                    <canvas id="chartTransporte"></canvas>
+                    <div class="chart-doughnut-center">
+                        <span class="center-value" id="centerTotal">0</span>
+                        <span class="center-label">DESPACHOS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-truck-ramp-box chart-icon"></i>
+                    <h3>Despachos por Tipo de Transporte</h3>
+                </div>
+                <div class="chart-doughnut-wrapper"><canvas id="chartTipoUnidad"></canvas></div>
+            </div>
+
+            <div class="chart-exec-card chart-full">
+    <div class="chart-exec-header">
+        <i class="fas fa-globe chart-icon"></i>
+        <h3>Venta y Despachos por País</h3>
+    </div>
+    <canvas id="chartPais"></canvas>
+</div>
+
+<div class="chart-exec-card chart-full">
+    <div class="chart-exec-header">
+        <i class="fas fa-file-contract chart-icon"></i>
+        <h3>Venta y Despachos por Incoterm</h3>
+    </div>
+    <canvas id="chartIncoterm"></canvas>
+</div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-trophy chart-icon"></i>
+                    <h3>Top 5 Clientes con Mayor Venta</h3>
+                </div>
+                <div id="tablaTopClientes" class="mini-table"></div>
+            </div>
+
+            <div class="chart-exec-card">
+                <div class="chart-exec-header">
+                    <i class="fas fa-arrow-down chart-icon"></i>
+                    <h3>Top 5 Clientes con Menor Venta</h3>
+                </div>
+                <div id="tablaBottomClientes" class="mini-table"></div>
+            </div>
+
+        </section>
+    </div>
+
+    <div id="reporte" class="dashboard-section" style="display: none;">
+
+        <header class="exec-header">
+            <div class="exec-title">
+                <div class="exec-logo"><i class="fas fa-table"></i></div>
+                <div>
+                    <h1>Reporte Diario</h1>
+                    <span class="exec-subtitle">Despacho Exportación · Resumen</span>
+                </div>
+            </div>
+            <div class="exec-actions">
+                <span class="exec-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="fechaActualReporte"></span>
+                </span>
+            </div>
+        </header>
+<section class="kpi-row" id="kpiRowDia" style="grid-template-columns: repeat(4, 1fr);"></section>
+        <section class="charts-exec" style="grid-template-columns: 7fr 3fr; margin-bottom: 20px;">
+    <div class="chart-exec-card">
+        <div class="chart-exec-header">
+            <i class="fas fa-chart-column chart-icon"></i>
+            <h3>Venta y Despachos por País</h3>
+        </div>
+        <canvas id="chartPaisReporte"></canvas>
+    </div>
+
+    <div style="display: grid; grid-template-rows: 350px 350px; gap: 20px; align-content: start;">
+    <div class="chart-exec-card">
+        <div class="chart-exec-header">
+            <i class="fas fa-chart-pie chart-icon"></i>
+            <h3>Total USD por Incoterm</h3>
+        </div>
+        <div class="chart-doughnut-wrapper"><canvas id="chartIncotermReporte"></canvas></div>
+    </div>
+
+    <div class="chart-exec-card">
+    <div class="chart-exec-header">
+        <i class="fas fa-chart-line chart-icon"></i>
+        <h3>Despachos por Semana</h3>
+        <select id="filterMesSemana" class="filter-select" style="margin-left:auto; min-width:140px;">
+            <option value="">Todos los meses</option>
+        </select>
+    </div>
+    <canvas id="chartSemanaReporte"></canvas>
+</div>
+</section>
+
+        <section class="charts-exec" id="reporteGrid" style="grid-template-columns: 1fr;">            <div class="chart-exec-card chart-full">
+                <div class="chart-exec-header">
+                    <i class="fas fa-table chart-icon"></i>
+                    <h3>Detalle por País / Cliente</h3>
+                </div>
+                <div id="tablaReporteDiario" class="excel-table"></div>
+            </div>
+
+            <div class="chart-exec-card chart-full">
+                <div class="chart-exec-header">
+                    <i class="fas fa-chart-pie chart-icon"></i>
+                    <h3>Datos Acumulados</h3>
+                </div>
+                <div id="tablaAcumulados" class="excel-table"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
